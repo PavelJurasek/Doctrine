@@ -26,8 +26,6 @@ use Tracy;
 class Connection extends Doctrine\DBAL\Connection
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var bool
 	 */

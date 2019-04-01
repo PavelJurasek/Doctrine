@@ -24,8 +24,6 @@ use Kdyby\Doctrine\ReadOnlyCollectionException;
 class ReadOnlyCollectionWrapper implements Collection, Selectable
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/** @var Collection */
 	private $inner;
 

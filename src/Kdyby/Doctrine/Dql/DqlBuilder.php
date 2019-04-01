@@ -24,8 +24,6 @@ use Nette;
 class DqlBuilder
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var array
 	 */

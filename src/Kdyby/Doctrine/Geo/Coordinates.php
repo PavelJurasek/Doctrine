@@ -21,8 +21,6 @@ use Nette;
 class Coordinates
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var float
 	 */

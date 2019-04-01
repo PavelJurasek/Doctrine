@@ -28,8 +28,6 @@ use Nette\Utils\Callback;
 class DqlSelection implements \IteratorAggregate
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/* The query types. */
 	const SELECT = 0;
 	const DELETE = 1;
@@ -217,7 +215,7 @@ class DqlSelection implements \IteratorAggregate
 	public function where($cond)
 	{
 		$this->state = self::STATE_DIRTY;
-		Callback::invokeArgs([$this->builder->where, 'addAnd'], func_get_args());
+		call_user_func_array([$this->builder->where, 'addAnd'], func_get_args());
 
 		return $this;
 	}
@@ -231,7 +229,7 @@ class DqlSelection implements \IteratorAggregate
 	public function orWhere($cond)
 	{
 		$this->state = self::STATE_DIRTY;
-		Callback::invokeArgs([$this->builder->where, 'addOr'], func_get_args());
+		call_user_func_array([$this->builder->where, 'addOr'], func_get_args());
 
 		return $this;
 	}
@@ -259,7 +257,7 @@ class DqlSelection implements \IteratorAggregate
 	public function having($cond)
 	{
 		$this->state = self::STATE_DIRTY;
-		Callback::invokeArgs([$this->builder->having, 'addAnd'], func_get_args());
+		call_user_func_array([$this->builder->having, 'addAnd'], func_get_args());
 
 		return $this;
 	}
@@ -273,7 +271,7 @@ class DqlSelection implements \IteratorAggregate
 	public function orHaving($cond)
 	{
 		$this->state = self::STATE_DIRTY;
-		Callback::invokeArgs([$this->builder->having, 'addOr'], func_get_args());
+		call_user_func_array([$this->builder->having, 'addOr'], func_get_args());
 
 		return $this;
 	}

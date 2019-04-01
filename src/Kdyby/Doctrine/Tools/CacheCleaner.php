@@ -24,8 +24,6 @@ use Nette;
 class CacheCleaner
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var \Doctrine\ORM\EntityManager
 	 */

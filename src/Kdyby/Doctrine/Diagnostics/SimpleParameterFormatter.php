@@ -21,8 +21,6 @@ use Nette;
 class SimpleParameterFormatter
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @param mixed $param
 	 * @return mixed

@@ -9,6 +9,10 @@ if (PHP_SAPI !== 'cli') {
 	exit(1);
 }
 
+if (getenv('TEMP_DIR') === FALSE) {
+	putenv('TEMP_DIR=' . sys_get_temp_dir());
+}
+
 \Tracy\Debugger::enable(FALSE, getenv('TEMP_DIR'));
 
 if ($sessionId = getenv('SESSION_ID')) {

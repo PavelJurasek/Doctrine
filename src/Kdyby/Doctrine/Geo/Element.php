@@ -22,8 +22,6 @@ use Nette\Utils\Strings;
 class Element
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	const POINT = 'POINT';
 	const LINE_STRING = 'LINESTRING';
 	const MULTI_LINE_STRING = 'MULTILINESTRING';

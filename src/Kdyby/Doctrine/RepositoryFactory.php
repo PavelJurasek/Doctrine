@@ -23,8 +23,6 @@ use Nette;
 class RepositoryFactory implements Doctrine\ORM\Repository\RepositoryFactory
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var Nette\DI\Container
 	 */

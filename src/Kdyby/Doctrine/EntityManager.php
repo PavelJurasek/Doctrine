@@ -34,8 +34,6 @@ use Nette;
 class EntityManager extends Doctrine\ORM\EntityManager implements Persistence\QueryExecutor, Persistence\Queryable
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @deprecated
 	 * @var array

@@ -46,8 +46,6 @@ use Nette\Utils\Paginator as UIPaginator;
 class ResultSet implements \Countable, \IteratorAggregate
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var int|NULL
 	 */

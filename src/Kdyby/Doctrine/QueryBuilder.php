@@ -30,8 +30,6 @@ use Nette;
 class QueryBuilder extends Doctrine\ORM\QueryBuilder implements \IteratorAggregate
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	/**
 	 * @var array
 	 */

@@ -25,8 +25,6 @@ use Nette;
 class Condition
 {
 
-	use \Kdyby\StrictObjects\Scream;
-
 	const COND_AND = Doctrine\ORM\Query\Expr\Andx::class;
 	const COND_OR = Doctrine\ORM\Query\Expr\Orx::class;
 
