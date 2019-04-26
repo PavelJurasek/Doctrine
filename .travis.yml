@@ -19,9 +19,7 @@ php:
   - 7.3
 
 env:
-  - # dev
   - COMPOSER_EXTRA_ARGS="--prefer-stable"
-  - COMPOSER_EXTRA_ARGS="--prefer-lowest --prefer-stable"
 
 matrix:
   fast_finish: true
