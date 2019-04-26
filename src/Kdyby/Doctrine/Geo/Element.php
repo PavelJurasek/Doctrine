@@ -234,7 +234,7 @@ class Element
 
 	protected function init()
 	{
-		if (!$m = Strings::match($this->stringValue, '~^(?P<name>\w+)\(\(?(?P<coordsList>[^)]+)\)?\)$~i')) {
+		if (!$m = Strings::match((string) $this->stringValue, '~^(?P<name>\w+)\(\(?(?P<coordsList>[^)]+)\)?\)$~i')) {
 			throw new Kdyby\Doctrine\InvalidArgumentException("Given expression '" . $this->stringValue . "' is not geometry definition.");
 		}
 		$name = $m['name'];
@@ -245,12 +245,13 @@ class Element
 		$coordsRegexp = '~^\s*-?[\d\.]+\s*' . preg_quote($coordsSeparator) . '\s*-?[\d\.]+\s*$~i';
 
 		$coordinates = [];
-		foreach (explode($separator, $coordsList) as $coords) {
+		/** @var string $coords */
+		foreach ((array) explode($separator, $coordsList) as $coords) {
 			if (!Strings::match($coords, $coordsRegexp)) {
 				throw new Kdyby\Doctrine\InvalidArgumentException("Given expression '" . $this->stringValue . "' is not geometry definition.");
 			}
 			list($lat, $lon) = explode($coordsSeparator, trim(Strings::replace($coords, '~\s+~', ' ')));
-			$coordinates[] = new Coordinates($lon, $lat);
+			$coordinates[] = new Coordinates((string) $lon, (string) $lat);
 		}
 
 		$this->name = $name;

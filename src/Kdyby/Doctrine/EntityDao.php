@@ -64,7 +64,7 @@ class EntityDao extends EntityRepository implements Persistence\ObjectDao
 			$this->getEntityManager()->persist($item);
 		}
 
-		return array_merge($entity, $relations);
+		return array_merge((array) $entity, $relations);
 	}
 
 

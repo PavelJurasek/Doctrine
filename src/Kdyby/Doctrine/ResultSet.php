@@ -224,7 +224,7 @@ class ResultSet implements \Countable, \IteratorAggregate
 
 
 	/**
-	 * @param int|NULL $offset
+	 * @param int $offset
 	 * @param int|NULL $limit
 	 *
 	 * @throws InvalidStateException
@@ -232,7 +232,7 @@ class ResultSet implements \Countable, \IteratorAggregate
 	 */
 	public function applyPaging($offset, $limit)
 	{
-		if ($this->query instanceof ORM\Query && ($this->query->getFirstResult() != $offset || $this->query->getMaxResults() != $limit)) {
+		if ($this->query instanceof ORM\Query && ($this->query->getFirstResult() !== $offset || $this->query->getMaxResults() !== $limit)) {
 			$this->query->setFirstResult($offset);
 			$this->query->setMaxResults($limit);
 			$this->iterator = NULL;

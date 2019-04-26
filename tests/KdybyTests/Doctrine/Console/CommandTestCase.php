@@ -60,7 +60,7 @@ abstract class CommandTestCase extends Tester\TestCase
 	];
 
 	/**
-	 * @var Nette\DI\Container
+	 * @var Nette\DI\Container|null
 	 */
 	private $serviceLocator;
 
@@ -100,7 +100,7 @@ abstract class CommandTestCase extends Tester\TestCase
 	 */
 	protected function getServiceLocator()
 	{
-		if (!$this->serviceLocator) {
+		if ($this->serviceLocator === null) {
 			$this->serviceLocator = $this->createServiceLocator();
 		}
 		return $this->serviceLocator;

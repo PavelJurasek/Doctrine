@@ -23,8 +23,7 @@ use Nette;
  * @method NativeQueryBuilder setParameters(array $params, array $types = [])
  * @method NativeQueryBuilder setFirstResult($firstResult)
  * @method NativeQueryBuilder setMaxResults($maxResults)
- * @method NativeQueryBuilder select($select = NULL)
- * @method NativeQueryBuilder addSelect($select = NULL)
+ * @method NativeQueryBuilder select($select = null)
  * @method NativeQueryBuilder delete($delete = null, $alias = null)
  * @method NativeQueryBuilder update($update = null, $alias = null)
  * @method NativeQueryBuilder groupBy($groupBy)
@@ -178,7 +177,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 			}
 		}
 
-		return parent::addSelect($selects);
+		parent::addSelect($selects);
+		return $this;
 	}
 
 
@@ -199,7 +199,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 	 */
 	public function join($fromAlias, $join, $alias, $condition = null)
 	{
-		return call_user_func_array([$this, 'innerJoin'], func_get_args());
+		$this->innerJoin(...func_get_args());
+		return $this;
 	}
 
 
@@ -214,7 +215,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 			list($condition) = array_values(Helpers::separateParameters($this, array_slice(func_get_args(), 3)));
 		}
 
-		return parent::innerJoin($fromAlias, $this->addTableResultMapping($join, $alias, $fromAlias), $alias, $condition);
+		parent::innerJoin($fromAlias, $this->addTableResultMapping($join, $alias, $fromAlias), $alias, $condition);
+		return $this;
 	}
 
 
@@ -229,7 +231,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 			list($condition) = array_values(Helpers::separateParameters($this, array_slice(func_get_args(), 3)));
 		}
 
-		return parent::leftJoin($fromAlias, $this->addTableResultMapping($join, $alias, $fromAlias), $alias, $condition);
+		parent::leftJoin($fromAlias, $this->addTableResultMapping($join, $alias, $fromAlias), $alias, $condition);
+		return $this;
 	}
 
 
@@ -240,11 +243,12 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 	 */
 	public function rightJoin($fromAlias, $join, $alias, $condition = null)
 	{
-		if ($condition !== NULL) {
+		if ($condition !== null) {
 			list($condition) = array_values(Helpers::separateParameters($this, array_slice(func_get_args(), 3)));
 		}
 
-		return parent::leftJoin($fromAlias, $this->addTableResultMapping($join, $alias, $fromAlias), $alias, $condition);
+		parent::leftJoin($fromAlias, $this->addTableResultMapping($join, $alias, $fromAlias), $alias, $condition);
+		return $this;
 	}
 
 
@@ -325,7 +329,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 	 */
 	public function where($predicates)
 	{
-		return call_user_func_array('parent::where', Helpers::separateParameters($this, func_get_args()));
+		parent::where(...Helpers::separateParameters($this, func_get_args()));
+		return $this;
 	}
 
 
@@ -336,7 +341,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 	 */
 	public function andWhere($where)
 	{
-		return call_user_func_array('parent::andWhere', Helpers::separateParameters($this, func_get_args()));
+		parent::andWhere(...Helpers::separateParameters($this, func_get_args()));
+		return $this;
 	}
 
 
@@ -347,7 +353,8 @@ class NativeQueryBuilder extends Doctrine\DBAL\Query\QueryBuilder
 	 */
 	public function orWhere($where)
 	{
-		return call_user_func_array('parent::orWhere', Helpers::separateParameters($this, func_get_args()));
+		parent::orWhere(...Helpers::separateParameters($this, func_get_args()));
+		return $this;
 	}
 
 }

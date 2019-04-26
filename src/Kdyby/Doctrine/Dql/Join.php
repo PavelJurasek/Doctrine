@@ -91,12 +91,12 @@ class Join extends Expr\Join
 				$this->conditionType = self::ON;
 			}
 
-			call_user_func_array([$this->condition, $method], $arguments);
+			$this->condition->{$method}(...$arguments);
 
 			return $this;
 		}
 
-		return call_user_func_array([$this->query, $name], $arguments);
+		return $this->query->{$name}(...$arguments);
 	}
 
 }

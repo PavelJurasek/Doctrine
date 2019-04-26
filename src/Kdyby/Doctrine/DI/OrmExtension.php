@@ -166,7 +166,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 		}
 
 		$builder = $this->getContainerBuilder();
-		$config = $this->getConfig();
+		$config = (array) $this->getConfig();
 
 		$builder->parameters[$this->prefix('debug')] = !empty($config['debug']);
 		if (isset($config['dbname']) || isset($config['driver']) || isset($config['connection'])) {
@@ -195,7 +195,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 			$this->processEntityManager($name, $emConfig);
 		}
 
-		if ($this->targetEntityMappings) {
+		if (count($this->targetEntityMappings) > 0) {
 			$listener = $builder->addDefinition($this->prefix('resolveTargetEntityListener'))
 				->setType(Kdyby\Doctrine\Tools\ResolveTargetEntityListener::class)
 				->addTag(Kdyby\Events\DI\EventsExtension::TAG_SUBSCRIBER);
@@ -505,6 +505,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 			->addSetup('setCacheLogger', [$this->prefix('@' . $name . '.cacheLogger')])
 			->setAutowired($isDefault);
 
+		/** @var Nette\DI\ServiceDefinition $configuration */
 		$configuration = $builder->getDefinition($this->prefix($name . '.ormConfiguration'));
 		$configuration->addSetup('setSecondLevelCacheEnabled');
 		$configuration->addSetup('setSecondLevelCacheConfiguration', ['@' . $cacheConfigName]);
@@ -574,7 +575,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 		$this->configuredConnections[$name] = $connectionServiceId;
 
 		if (!is_bool($config['logging'])) {
-			$fileLogger = new Statement(Kdyby\Doctrine\Diagnostics\FileLogger::class, [$builder->expand($config['logging'])]);
+			$fileLogger = new Statement(Kdyby\Doctrine\Diagnostics\FileLogger::class, [Nette\DI\Helpers::expand($config['logging'], $builder->parameters)]);
 			$configuration->addSetup('$service->getSQLLogger()->addLogger(?)', [$fileLogger]);
 
 		} elseif ($config['logging']) {
@@ -589,7 +590,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 	/**
 	 * @param \Nette\DI\ServiceDefinition $metadataDriver
 	 * @param string $namespace
-	 * @param string|array|\stdClass $driver
+	 * @param string|array|\stdClass|Statement $driver
 	 * @param string $prefix
 	 * @throws \Nette\Utils\AssertionException
 	 * @return string
@@ -614,10 +615,10 @@ class OrmExtension extends Nette\DI\CompilerExtension
 				}
 			}
 
-			$driver = new Statement(self::ANNOTATION_DRIVER, is_array($paths) ? $paths : [$paths]);
+			$driver = new Statement(self::ANNOTATION_DRIVER, $paths);
 		}
 
-		$impl = $driver instanceof \stdClass ? $driver->value : ($driver instanceof Statement ? $driver->getEntity() : (string) $driver);
+		$impl = $driver instanceof \stdClass ? $driver->value : $driver->getEntity();
 		list($driver) = CacheHelpers::filterArgs($driver);
 		/** @var Statement $driver */
 
@@ -688,8 +689,8 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
 		$disabled = TRUE;
 		foreach ($this->configuredManagers as $managerName => $_) {
-			$factoryClassName = $builder->getDefinition($this->prefix($managerName . '.repositoryFactory'))->getClass();
-			if ($factoryClassName === Kdyby\Doctrine\RepositoryFactory::class || in_array(Kdyby\Doctrine\RepositoryFactory::class, class_parents($factoryClassName), TRUE)) {
+			$factoryClassName = $builder->getDefinition($this->prefix($managerName . '.repositoryFactory'))->getType();
+			if ($factoryClassName === Kdyby\Doctrine\RepositoryFactory::class || in_array(Kdyby\Doctrine\RepositoryFactory::class, class_parents((string) $factoryClassName), TRUE)) {
 				$disabled = FALSE;
 			}
 		}
@@ -700,7 +701,10 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
 		if (!method_exists($builder, 'findByType')) {
 			foreach ($this->configuredManagers as $managerName => $_) {
-				$builder->getDefinition($this->prefix($managerName . '.repositoryFactory'))
+				/** @var Nette\DI\Definitions\FactoryDefinition $factoryDef */
+				$factoryDef = $builder->getDefinition($this->prefix($managerName . '.repositoryFactory'));
+				$factoryDef
+					->getResultDefinition()
 					->addSetup('setServiceIdsMap', [[], $this->prefix('repositoryFactory.' . $managerName . '.defaultRepositoryFactory')]);
 			}
 
@@ -713,14 +717,15 @@ class OrmExtension extends Nette\DI\CompilerExtension
 				continue; // ignore
 			}
 
-			$originalDefFactory = $originalDef->getFactory();
-			$factory = ($originalDefFactory !== NULL) ? $originalDefFactory->getEntity() : $originalDef->getType();
+			/** @var Statement|Nette\DI\Definitions\ServiceDefinition $originalDefFactory */
+			$originalDefFactory = $originalDef instanceof Nette\DI\Definitions\FactoryDefinition ? $originalDef->getResultDefinition()->getFactory() : $originalDef;
+			$factory = ($originalDefFactory->getEntity() !== NULL) ? $originalDefFactory->getEntity() : $originalDef->getType();
 
 			if (is_array($factory)) {
 				$factory = sprintf('%s::%s', $factory[0]->getValue(), $factory[1]);
 			}
 
-			if (stripos($factory, '::getRepository') !== FALSE || stripos($factory, '::getDao') !== FALSE) {
+			if (is_string($factory) && (stripos($factory, '::getRepository') !== FALSE || stripos($factory, '::getDao') !== FALSE)) {
 				continue; // ignore
 			}
 
@@ -730,7 +735,7 @@ class OrmExtension extends Nette\DI\CompilerExtension
 				->setImplement(IRepositoryFactory::class)
 				->setParameters([Doctrine\ORM\EntityManagerInterface::class . ' entityManager', Doctrine\ORM\Mapping\ClassMetadata::class . ' classMetadata'])
 				->setAutowired(FALSE);
-			$factoryStatement = $factoryDef->getResultDefinition()->getFactory() ?: new Statement($factoryDef->getType());
+			$factoryStatement = $factoryDef->getResultDefinition()->getFactory()->getEntity() !== null ? $factoryDef->getResultDefinition()->getFactory() : new Statement($factoryDef->getType());
 			$factoryStatement->arguments[0] = new Code\PhpLiteral('$entityManager');
 			$factoryStatement->arguments[1] = new Code\PhpLiteral('$classMetadata');
 			$factoryDef->getResultDefinition()->setArguments($factoryStatement->arguments);
@@ -763,7 +768,9 @@ class OrmExtension extends Nette\DI\CompilerExtension
 		}
 
 		foreach ($this->configuredManagers as $managerName => $_) {
-			$builder->getDefinition($this->prefix($managerName . '.repositoryFactory'))
+			/** @var Nette\DI\Definitions\ServiceDefinition $factoryDef */
+			$factoryDef = $builder->getDefinition($this->prefix($managerName . '.repositoryFactory'));
+			$factoryDef
 				->addSetup('setServiceIdsMap', [
 					$serviceMap[$managerName],
 					$this->prefix('repositoryFactory.' . $managerName . '.defaultRepositoryFactory')
@@ -774,10 +781,9 @@ class OrmExtension extends Nette\DI\CompilerExtension
 
 
 	/**
-	 * @param Nette\DI\ServiceDefinition $def
 	 * @return string[]
 	 */
-	protected function getServiceBoundManagers(Nette\DI\ServiceDefinition $def)
+	protected function getServiceBoundManagers(Nette\DI\Definitions\Definition $def)
 	{
 		$builder = $this->getContainerBuilder();
 		$boundManagers = $def->getTag(self::TAG_BIND_TO_MANAGER);
@@ -861,9 +867,9 @@ class OrmExtension extends Nette\DI\CompilerExtension
 	private function addCollapsePathsToTracy(Method $init)
 	{
 		$blueScreen = \Tracy\Debugger::class . '::getBlueScreen()';
-		$commonDirname = dirname(Nette\Reflection\ClassType::from(Doctrine\Common\Version::class)->getFileName());
+		$commonDirname = dirname((string) Nette\Reflection\ClassType::from(Doctrine\Common\Version::class)->getFileName());
 
-		$init->addBody($blueScreen . '->collapsePaths[] = ?;', [dirname(Nette\Reflection\ClassType::from(Kdyby\Doctrine\Exception::class)->getFileName())]);
+		$init->addBody($blueScreen . '->collapsePaths[] = ?;', [dirname((string) Nette\Reflection\ClassType::from(Kdyby\Doctrine\Exception::class)->getFileName())]);
 		$init->addBody($blueScreen . '->collapsePaths[] = ?;', [dirname($commonDirname, 4)]); // this should be vendor/doctrine
 		foreach ($this->proxyAutoloaders as $dir) {
 			$init->addBody($blueScreen . '->collapsePaths[] = ?;', [$dir]);

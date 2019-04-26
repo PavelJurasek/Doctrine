@@ -145,8 +145,11 @@ class NonLockingUniqueInserter
 		// prepare statement && execute
 		$this->prepareInsert($meta, array_merge($fields, $associations, $discriminator))->execute();
 
+		/** @var Doctrine\ORM\Id\AbstractIdGenerator|null */
+		$idGen = $meta->idGenerator;
+
 		// assign ID to entity
-		if ($idGen = $meta->idGenerator) {
+		if ($idGen !== null) {
 			if ($idGen->isPostInsertGenerator()) {
 				$id = $idGen->generate($this->em, $entity);
 				$identifierFields = $meta->getIdentifierFieldNames();

@@ -199,7 +199,7 @@ class Connection extends Doctrine\DBAL\Connection
 	{
 		$args = func_get_args();
 		try {
-			return call_user_func_array('parent::query', $args);
+			return parent::query(...$args);
 
 		} catch (\Exception $e) {
 			throw $this->resolveException($e, func_get_arg(0));

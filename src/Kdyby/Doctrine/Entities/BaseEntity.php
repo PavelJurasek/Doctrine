@@ -189,14 +189,6 @@ abstract class BaseEntity implements \Serializable
 			}
 		}
 
-		// extension methods
-		if ($cb = static::extensionMethod($name)) {
-			/** @var \Nette\Callback $cb */
-			array_unshift($args, $this);
-
-			return call_user_func_array($cb, $args);
-		}
-
 		throw MemberAccessException::undefinedMethodCall($this, $name);
 	}
 

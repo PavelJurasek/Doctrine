@@ -13,14 +13,14 @@ if (getenv('TEMP_DIR') === FALSE) {
 	putenv('TEMP_DIR=' . sys_get_temp_dir());
 }
 
-\Tracy\Debugger::enable(FALSE, getenv('TEMP_DIR'));
+\Tracy\Debugger::enable(FALSE, getenv('TEMP_DIR') ?: null);
 
 if ($sessionId = getenv('SESSION_ID')) {
 	$GLOBALS['_COOKIE'][session_name()] = $sessionId;
 }
 
 $config = new Nette\Configurator();
-$config->setTempDirectory(getenv('TEMP_DIR'));
+$config->setTempDirectory((string) getenv('TEMP_DIR'));
 $config->addParameters([
 	'appDir' => __DIR__,
 	'wwwDir' => __DIR__,

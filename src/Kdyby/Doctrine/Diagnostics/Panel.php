@@ -93,12 +93,14 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 		$source = NULL;
 		foreach (debug_backtrace(FALSE) as $row) {
-			if (isset($row['file']) && $this->filterTracePaths(realpath($row['file']))) {
+			if (isset($row['file']) && $this->filterTracePaths((string) realpath($row['file']))) {
 				if (isset($row['class']) && stripos($row['class'], '\\' . Proxy::MARKER) !== FALSE) {
 					if (!in_array(Doctrine\Common\Persistence\Proxy::class, class_implements($row['class']))) {
 						continue;
 
-					} elseif (isset($row['function']) && $row['function'] === '__load') {
+					}
+
+					if (isset($row['function']) && $row['function'] === '__load') {
 						continue;
 					}
 
@@ -128,7 +130,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 			if (!$return) {
 				break;
 			}
-			$return = $return && strpos($file, '/' . trim($path, '/') . '/') === FALSE;
+			$return = strpos($file, '/' . trim($path, '/') . '/') === FALSE;
 		}
 		return $return;
 	}
@@ -229,8 +231,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 			return '';
 		}
 
-		$loggerChain = $config->getSecondLevelCacheConfiguration()
-			->getCacheLogger();
+		$cacheConfig = $loggerChain = $config->getSecondLevelCacheConfiguration();
+		$loggerChain = $cacheConfig ? $cacheConfig->getCacheLogger() : null;
 
 		if (!$loggerChain instanceof Doctrine\ORM\Cache\Logging\CacheLoggerChain) {
 			return '';
@@ -369,8 +371,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 		} elseif ($e instanceof Doctrine\ORM\Mapping\MappingException) {
 			if ($invalidEntity = Strings::match($e->getMessage(), '~^Class "([\\S]+)" .*? is not .*? valid~i')) {
 				$refl = Nette\Reflection\ClassType::from($invalidEntity[1]);
-				$file = $refl->getFileName();
-				$errorLine = $refl->getStartLine();
+				$file = (string) $refl->getFileName();
+				$errorLine = (int) $refl->getStartLine();
 
 				return [
 					'tab' => 'Invalid entity',
@@ -379,7 +381,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 				];
 			}
 
-		} elseif ($e instanceof Doctrine\DBAL\Schema\SchemaException && $dic && ($em = $dic->getByType(Kdyby\Doctrine\EntityManager::class, FALSE))) {
+		} elseif ($e instanceof Doctrine\DBAL\Schema\SchemaException && ($em = $dic->getByType(Kdyby\Doctrine\EntityManager::class, FALSE))) {
 			if (!$em instanceof Kdyby\Doctrine\EntityManager) {
 				return null;
 			}
@@ -396,8 +398,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 					return NULL;
 				}
 
-				$file = $refl->getFileName();
-				$errorLine = $refl->getStartLine();
+				$file = (string) $refl->getFileName();
+				$errorLine = (int) $refl->getStartLine();
 
 				return [
 					'tab' => 'Invalid schema',
@@ -519,13 +521,13 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 		$sql = preg_replace("#(?<=[\\s,(])($keywords1)(?=[\\s,)])#i", "\n\$1", $sql);
 
 		// reduce spaces
-		$sql = preg_replace('#[ \t]{2,}#', ' ', $sql);
+		$sql = preg_replace('#[ \t]{2,}#', ' ', (string) $sql);
 
-		$sql = wordwrap($sql, 100);
+		$sql = wordwrap((string) $sql, 100);
 		$sql = preg_replace('#([ \t]*\r?\n){2,}#', "\n", $sql);
 
 		// syntax highlight
-		$sql = htmlspecialchars($sql, ENT_IGNORE, 'UTF-8');
+		$sql = htmlspecialchars((string) $sql, ENT_IGNORE, 'UTF-8');
 		$sql = preg_replace_callback("#(/\\*.+?\\*/)|(\\*\\*.+?\\*\\*)|(?<=[\\s,(])($keywords1)(?=[\\s,)])|(?<=[\\s,(=])($keywords2)(?=[\\s,)=])#is", function ($matches) {
 			if (!empty($matches[1])) { // comment
 				return '<em style="color:gray">' . $matches[1] . '</em>';
@@ -541,7 +543,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 			}
 		}, $sql);
 
-		return '<pre class="dump">' . trim($sql) . "</pre>\n";
+		return '<pre class="dump">' . trim((string) $sql) . "</pre>\n";
 	}
 
 
@@ -580,8 +582,8 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 		$formattedParams = [];
 		foreach ($params as $key => $param) {
 			if (isset($types[$key])) {
-				if (is_scalar($types[$key]) && array_key_exists($types[$key], Type::getTypesMap())) {
-					$types[$key] = Type::getType($types[$key]);
+				if (is_scalar($types[$key]) && array_key_exists((string) $types[$key], Type::getTypesMap())) {
+					$types[$key] = Type::getType((string) $types[$key]);
 				}
 
 				/** @var Type[] $types */
@@ -646,7 +648,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 		}
 
 		$refl = Nette\Reflection\ClassType::from($context['class']);
-		$file = $refl->getFileName();
+		$file = (string) $refl->getFileName();
 		$line = NULL;
 
 		if ($context['type'] === 'property') {
@@ -670,7 +672,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 
 	/**
-	 * @param \Reflector|\Nette\Reflection\ClassType|\Nette\Reflection\Method|\Nette\Reflection\Property $refl
+	 * @param \Nette\Reflection\ClassType|\Nette\Reflection\Method|\Nette\Reflection\Property $refl
 	 * @param \Exception|\Throwable $e
 	 * @param int|NULL $startLine
 	 * @return int|NULL
@@ -689,12 +691,12 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 		} elseif ($notImported = Strings::match($e->getMessage(), '~^\[Semantical Error\]\s+The annotation "([^"]*?)"~i')) {
 			$parts = explode(self::findRenamed($refl, $notImported[1]), self::cleanedPhpDoc($refl), 2);
-			$targetLine = self::calculateAffectedLine($refl, strlen($parts[0]));
+			$targetLine = self::calculateAffectedLine($refl, strlen((string) $parts[0]));
 
 		} elseif ($notFound = Strings::match($e->getMessage(), '~^\[Semantical Error\]\s+Couldn\'t find\s+(.*?)\s+(.*?),\s+~')) {
 			// this is just a guess
 			$parts = explode(self::findRenamed($refl, $notFound[2]), self::cleanedPhpDoc($refl), 2);
-			$targetLine = self::calculateAffectedLine($refl, strlen($parts[0]));
+			$targetLine = self::calculateAffectedLine($refl, strlen((string) $parts[0]));
 
 		} else {
 			$targetLine = self::calculateAffectedLine($refl, 1);
@@ -708,7 +710,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 
 	/**
-	 * @param \Reflector|\Nette\Reflection\ClassType|\Nette\Reflection\Method $refl
+	 * @param \Nette\Reflection\ClassType|\Nette\Reflection\Method|\Nette\Reflection\Property $refl
 	 * @param int $symbolPos
 	 * @return int
 	 */
@@ -728,7 +730,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 
 	/**
-	 * @param \Reflector|Nette\Reflection\ClassType|Nette\Reflection\Method $refl
+	 * @param \Nette\Reflection\ClassType|\Nette\Reflection\Method|\Nette\Reflection\Property $refl
 	 * @param string $annotation
 	 * @return string
 	 */
@@ -759,13 +761,13 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 
 
 	/**
-	 * @param \Nette\Reflection\ClassType|\Nette\Reflection\Method|\Reflector $refl
+	 * @param \Nette\Reflection\ClassType|\Nette\Reflection\Method|\Nette\Reflection\Property $refl
 	 * @param int|null $atPos
 	 * @return string
 	 */
 	private static function cleanedPhpDoc(\Reflector $refl, &$atPos = NULL)
 	{
-		return trim(substr($doc = $refl->getDocComment(), $atPos = strpos($doc, '@') - 1), '* /');
+		return trim(substr($doc = (string) $refl->getDocComment(), $atPos = strpos($doc, '@') - 1), '* /');
 	}
 
 
@@ -774,7 +776,7 @@ class Panel implements IBarPanel, Doctrine\DBAL\Logging\SQLLogger
 	 * Returns link to editor.
 	 * @author David Grudl
 	 * @param string $file
-	 * @param string|int $line
+	 * @param int|null $line
 	 * @param string $text
 	 * @return Nette\Utils\Html
 	 */

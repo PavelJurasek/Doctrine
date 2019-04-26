@@ -30,7 +30,7 @@ final class SerializableMixin
 	private static $classes = [];
 
 	/**
-	 * @var array|\Nette\Reflection\Property
+	 * @var \Nette\Reflection\Property[][]
 	 */
 	private static $properties = [];
 

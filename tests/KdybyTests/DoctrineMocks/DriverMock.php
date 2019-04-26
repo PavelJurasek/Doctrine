@@ -93,6 +93,6 @@ class DriverMock implements Doctrine\DBAL\Driver
 
 	public function getDatabase(Doctrine\DBAL\Connection $conn)
 	{
-		return;
+		return '';
 	}
 }

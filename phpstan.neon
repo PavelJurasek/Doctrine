@@ -2,12 +2,33 @@ parameters:
 	ignoreErrors:
 		- '#Constant TEMP_DIR not found#'
 		- '#Constant TEST_DIR not found#'
-		- '#Parameter \#1 \$firstResult of method [^\s]+::setFirstResult\(\) expects int, (int\|)?null given#'
 		- '#Method Doctrine\\DBAL\\Driver\\Connection::query\(\) invoked with \d+ parameter, 0 required#'
-		- '#Kdyby\\Doctrine\\EmptyResultSet::__construct\(\) does not call parent constructor from Kdyby\\Doctrine\\ResultSet.#'
-		- '#Call to an undefined method Serializable::__sleep\(\).#'
-		- '#Call to an undefined method Serializable::__wakeup\(\).#'
-		- '#Access to an undefined property Nette\\Http\\SessionSection::\$entity#'
-		- '#Call to an undefined method Reflector::get#' # TODO refactoring class Panel
-		- '#Call to an undefined method object::getId\(\)#' # class SimpleParameterFormatter
-		- '#Method Kdyby\\Doctrine\\NativeQueryBuilder::(join|where|andWhere|orWhere)\(\) should return \$this but returns call_user_func_array#' # NativeQueryBuilder shortcuts
+		- '#Command::wrapCommand\(\) expects string, array<string>|bool|string|null given#'
+#		- # reset() won't return false
+#			message: '#Parameter \#2 $field of method Doctrine\ORM\Mapping\ClassMetadataInfo::setFieldValue\(\) expects string, string|false given#'
+#			path: 'src/Kdyby/Doctrine/Tools/NonLockingUniqueInserter.php'
+		- # method accepts instance, but throws meaningful message if anything else is given
+			message: '#Else branch is unreachable because ternary operator condition is always true#'
+			path: 'src/Kdyby/Doctrine/QueryObject.php'
+		- # inheritdoc cannot be overriden
+			message: '#should return \$this\(Doctrine\\DBAL\\Query\\QueryBuilder\) but returns \$this\(Kdyby\\Doctrine\\NativeQueryBuilder\)#'
+			path: 'src/Kdyby/Doctrine/NativeQueryBuilder.php'
+#		- # exception would be thrown?
+#			message: '#function rtrim expects string, string|false given#'
+#			path: 'src/Kdyby/Doctrine/Helpers.php'
+		-
+			message: '#Parameter \#5 \$offset of function preg_match expects int, float|int given#'
+			path: 'src/Kdyby/Doctrine/Helpers.php'
+		- # connection might be null
+			message: '#Ternary operator condition is always true#'
+			path: 'src/Kdyby/Doctrine/Diagnostics/Panel.php'
+		- # empty result set is just empty :)
+			message: '#Kdyby\\Doctrine\\EmptyResultSet::__construct\(\) does not call parent constructor from Kdyby\\Doctrine\\ResultSet#'
+			path: 'src/Kdyby/Doctrine/EmptyResultSet.php'
+		- # https://github.com/phpstan/phpstan/issues/1826
+			message: '#Empty array passed to foreach#'
+			path: 'src/Kdyby/Doctrine/DI/OrmExtension.php'
+
+includes:
+	- vendor/phpstan/phpstan-nette/extension.neon
+	- vendor/phpstan/phpstan-nette/rules.neon

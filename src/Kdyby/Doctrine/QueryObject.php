@@ -116,11 +116,11 @@ abstract class QueryObject implements Kdyby\Persistence\Query
 
 	/**
 	 * @param Queryable $repository
-	 * @return \Doctrine\ORM\Query|\Doctrine\ORM\QueryBuilder
+	 * @return \Doctrine\ORM\Query|\Doctrine\ORM\QueryBuilder|null
 	 */
 	protected function doCreateCountQuery(Queryable $repository)
 	{
-
+		return null;
 	}
 
 
@@ -146,6 +146,7 @@ abstract class QueryObject implements Kdyby\Persistence\Query
 			return $paginatedQuery->count();
 		}
 
+		/** @var Doctrine\ORM\Query|QueryBuilder $query */
 		$query = $this->getQuery($repository)
 			->setFirstResult(NULL)
 			->setMaxResults(NULL);
