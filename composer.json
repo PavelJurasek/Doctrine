@@ -16,33 +16,15 @@
 		"email": "filip@prochazka.su",
 		"issues": "https://github.com/kdyby/doctrine/issues"
 	},
-	"repositories": [
-		{
-			"type": "git",
-			"url": "https://github.com/paveljurasek/annotations"
-		},
-		{
-			"type": "git",
-			"url": "https://github.com/paveljurasek/console"
-		},
-		{
-			"type": "git",
-			"url": "https://github.com/paveljurasek/events"
-		},
-		{
-			"type": "git",
-			"url": "https://github.com/paveljurasek/doctrinecache"
-		}
-	],
 	"require": {
 		"php": "^7.1",
 		"doctrine/orm": "^2.6",
 		"doctrine/dbal": "^2.9",
-		"kdyby/events": "^4.0",
-		"kdyby/console": "^3.0",
-		"kdyby/annotations": "^3.0",
-		"kdyby/doctrine-cache": "^3.0",
-		"nette/di": "^3.0-RC2",
+		"kdyby/events": "^3.2",
+		"kdyby/console": "^2.8",
+		"kdyby/annotations": "^2.6",
+		"kdyby/doctrine-cache": "^2.7",
+		"nette/di": "^3.0",
 		"nette/utils": "^3.0",
 		"nette/finder": "^2.5"
 	},
@@ -53,8 +35,9 @@
 		"tracy/tracy": "^2.6",
 		"nette/tester": "^2.2",
 		"phpstan/phpstan": "^0.11.5",
-		"phpstan/phpstan-nette": "^0.11.0"
+		"phpstan/phpstan-nette": "^0.11"
 	},
+	"minimum-stability": "dev",
 	"autoload": {
 		"psr-0": {
 			"Kdyby\\Doctrine\\": "src/",
